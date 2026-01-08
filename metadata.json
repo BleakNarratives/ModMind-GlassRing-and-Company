@@ -1,0 +1,8 @@
+{
+  "name": "Equinex-Modmind Auth Hub",
+  "description": "A futuristic, universal cross-platform authentication and identity management hub powered by JaneBot AI. Designed for maximum security and zero-friction access.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
