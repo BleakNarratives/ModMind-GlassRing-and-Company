@@ -1,18 +1,14 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Camera, Zap, Target, Activity } from 'lucide-react';
 
 const CameraGestureEngine: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isActive, setIsActive] = useState(false);
-  const [shardsDetected, setShardsDetected] = useState(0);
 
+  // Targets high saturation green/neon sharpie cap colors
   const TARGET_COLOR = { r: 16, g: 185, b: 129 }; 
-  const TOLERANCE = 60;
-
-  const historyRef = useRef<{x: number, y: number, t: number}[]>([]);
-  const lastGestureRef = useRef<number>(0);
+  const TOLERANCE = 80;
 
   useEffect(() => {
     if (!isActive) return;
@@ -37,57 +33,43 @@ const CameraGestureEngine: React.FC = () => {
       const pixels = frame.data;
       const points: { x: number, y: number }[] = [];
 
-      for (let i = 0; i < pixels.length; i += 32) { 
+      // Detect up to 2 high-saturation points (Sharpie Caps)
+      for (let i = 0; i < pixels.length; i += 16) { 
         const r = pixels[i];
         const g = pixels[i + 1];
         const b = pixels[i + 2];
         const diff = Math.abs(r - TARGET_COLOR.r) + Math.abs(g - TARGET_COLOR.g) + Math.abs(b - TARGET_COLOR.b);
+        
         if (diff < TOLERANCE) {
           const x = (i / 4) % 320;
           const y = Math.floor((i / 4) / 320);
-          if (points.length < 1 || Math.hypot(x - points[0].x, y - points[0].y) > 50) {
+          
+          // Cluster detection: Ensure points are far enough apart to be distinct caps
+          if (points.length === 0 || Math.hypot(x - points[0].x, y - points[0].y) > 60) {
             points.push({ x, y });
           }
         }
         if (points.length >= 2) break;
       }
 
-      setShardsDetected(points.length);
-
       if (points.length >= 1) {
-        const p = points[0];
-        const now = Date.now();
-        historyRef.current.push({ ...p, t: now });
-        if (historyRef.current.length > 30) historyRef.current.shift();
-
-        // 1. CHOP DETECTION (Rapid Y Drop)
-        if (historyRef.current.length > 5) {
-          const prev = historyRef.current[historyRef.current.length - 5];
-          const dy = p.y - prev.y;
-          const dt = now - prev.t;
-          const vy = dy / dt;
-          if (vy > 0.8 && now - lastGestureRef.current > 1000) {
-            window.dispatchEvent(new CustomEvent('optical_chop'));
-            lastGestureRef.current = now;
-          }
+        const midX = points.length === 2 ? (points[0].x + points[1].x) / 2 : points[0].x;
+        const midY = points.length === 2 ? (points[0].y + points[1].y) / 2 : points[0].y;
+        const distance = points.length === 2 ? Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) : 0;
+        
+        // Calculate angle between points for rotation
+        let angle = 0;
+        if (points.length === 2) {
+           angle = Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x) * (180 / Math.PI);
         }
 
-        // 2. POINT DETECTION (Stasis)
-        const isStatic = historyRef.current.length >= 20 && historyRef.current.every(hp => Math.hypot(hp.x - p.x, hp.y - p.y) < 15);
-        if (isStatic && now - lastGestureRef.current > 1500) {
-          window.dispatchEvent(new CustomEvent('optical_point', { detail: { x: p.x, y: p.y } }));
-          lastGestureRef.current = now;
-        }
-
-        // 3. FIGURE-8 / CALIBRATION (Simplified: Circularity)
-        // In a real app we'd use a more complex point-set matcher.
-        // For now, let's trigger an event if they move enough.
         window.dispatchEvent(new CustomEvent('optical_gesture', { 
           detail: { 
-            midX: p.x, 
-            midY: p.y, 
+            midX, 
+            midY, 
             shards: points.length,
-            distance: points.length === 2 ? Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) : 0
+            distance,
+            angle
           } 
         }));
       }
@@ -103,22 +85,20 @@ const CameraGestureEngine: React.FC = () => {
   }, [isActive]);
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[160] flex flex-col items-center">
+    <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200]">
       <button 
         onClick={() => setIsActive(!isActive)}
-        className={`px-6 py-3 rounded-2xl flex items-center gap-3 transition-all border ${isActive ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'etched-glass text-slate-500 border-white/5'}`}
+        className={`px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isActive ? 'bg-emerald-500 text-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.3)]' : 'etched-glass text-slate-500 border-white/5 hover:text-white'}`}
       >
-        <Activity size={16} className={isActive ? 'animate-pulse' : ''} />
-        <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-          {isActive ? 'Kinetic Link: Online' : 'Initiate Kinetic Link'}
-        </span>
+        {isActive ? 'Aperture Active' : 'Calibrate Aperture'}
       </button>
 
       {isActive && (
-        <div className="mt-4 p-2 etched-glass rounded-2xl border-emerald-500/20 relative group">
-          <video ref={videoRef} autoPlay playsInline className="w-32 h-24 object-cover grayscale opacity-30 rounded-xl" />
-          <div className="absolute inset-0 flex items-center justify-center">
-             <Target size={20} className="text-emerald-500/40 animate-spin-slow" />
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 w-48 h-36 etched-glass rounded-2xl overflow-hidden border border-emerald-500/20 group">
+          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover grayscale opacity-20 group-hover:opacity-40 transition-opacity" />
+          <canvas ref={canvasRef} width={320} height={240} className="hidden" />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-10 h-10 border border-emerald-500/20 rounded-full animate-ping" />
           </div>
         </div>
       )}

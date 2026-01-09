@@ -1,8 +1,7 @@
 {
-  "name": "Equinex-Modmind Auth Hub",
-  "description": "A futuristic, universal cross-platform authentication and identity management hub powered by JaneBot AI. Designed for maximum security and zero-friction access.",
+  "name": "Equinex Forge R&D",
+  "description": "High-fidelity AR workspace for optical gesture research and Forge Ring interfaces.",
   "requestFramePermissions": [
-    "camera",
-    "microphone"
+    "camera"
   ]
 }

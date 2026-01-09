@@ -17,7 +17,10 @@
             font-family: 'Space+Grotesk', sans-serif;
             background-color: var(--carbon);
             color: #f8fafc;
-            overflow: hidden;
+            /* Changed overflow:hidden to allow scrolling for long tactical logs and reports */
+            overflow-x: hidden;
+            overflow-y: auto;
+            background-attachment: fixed;
             /* Subtle grid and bottom-up accent lighting */
             background-image: 
                 radial-gradient(circle at 50% 120%, rgba(16, 185, 129, 0.1) 0%, transparent 60%),
@@ -93,8 +96,10 @@
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.5); }
     </style>
 <script type="importmap">
 {

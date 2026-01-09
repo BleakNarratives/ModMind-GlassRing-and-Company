@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { ShieldAlert, Skull, Flame, Hammer, Bot, Wand2, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
+import { ShieldAlert, Skull, Flame, Hammer, Bot, Wand2, Settings as SettingsIcon, ShieldCheck, GraduationCap, Code } from 'lucide-react';
 
 const Settings: React.FC = () => {
   const [isAngryMode, setIsAngryMode] = useState(localStorage.getItem('mode_cynic') === 'true');
   const [isRedTeam, setIsRedTeam] = useState(localStorage.getItem('red_team_lockdown') === 'true');
+  const [isMentorMode, setIsMentorMode] = useState(localStorage.getItem('mentor_mode') === 'true');
 
   const toggleAngryMode = () => {
     const newState = !isAngryMode;
@@ -19,6 +20,12 @@ const Settings: React.FC = () => {
     window.dispatchEvent(new CustomEvent('red_team_toggle', { detail: { locked: newState } }));
   };
 
+  const toggleMentorMode = () => {
+    const newState = !isMentorMode;
+    setIsMentorMode(newState);
+    localStorage.setItem('mentor_mode', String(newState));
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-16 pb-24 animate-in fade-in duration-1000">
       <header className="flex items-center gap-6">
@@ -27,32 +34,31 @@ const Settings: React.FC = () => {
         </div>
         <div>
           <h2 className="text-6xl font-black tracking-tighter text-white uppercase italic">System Core</h2>
-          <p className="text-slate-500 font-medium text-lg">Autonomous Shard Orchestration & Security Mesh Tuning.</p>
+          <p className="text-slate-500 font-medium text-lg">Autonomous Shard Orchestration & Knowledge Transfer.</p>
         </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         <div className="space-y-6">
           <h3 className={`text-[10px] font-black uppercase tracking-[0.5em] flex items-center gap-3 ${isRedTeam ? 'text-red-500' : 'text-slate-600'}`}>
-            <ShieldAlert size={16} /> Defensive Matrix
+            <GraduationCap size={16} /> Education Matrix
           </h3>
-          <div className={`etched-glass p-10 rounded-[3.5rem] border-2 transition-all ${isRedTeam ? 'border-red-500/40' : 'border-white/5'}`}>
+          <div className={`etched-glass p-10 rounded-[3.5rem] border-2 transition-all ${isMentorMode ? 'border-emerald-500/40' : 'border-white/5'}`}>
             <SettingToggle 
-              icon={Skull}
-              title="Red Team Lockdown"
-              desc="Hostile environment simulation. JaneBot enters a paranoid state, enabling deep packet inspection on all neural queries."
-              active={isRedTeam}
-              onToggle={toggleRedTeam}
-              danger
+              icon={Code}
+              title="Socratic Mentor Mode"
+              desc="JaneBot will stop simplifying. She will explain the code mechanics and execution flow of every query."
+              active={isMentorMode}
+              onToggle={toggleMentorMode}
             />
             <div className="h-px bg-white/5 my-8" />
             <SettingToggle 
-              icon={Flame}
-              title="Cynical Reality Check"
-              desc="Enables the 'Hostile Auditor' persona globally. JaneBot will actively critique architectural inefficiency."
-              active={isAngryMode}
-              onToggle={toggleAngryMode}
-              warning
+              icon={Skull}
+              title="Red Team Lockdown"
+              desc="Hostile environment simulation. Enabling deep packet inspection and hostile audit logging."
+              active={isRedTeam}
+              onToggle={toggleRedTeam}
+              danger
             />
           </div>
         </div>
@@ -63,11 +69,12 @@ const Settings: React.FC = () => {
           </h3>
           <div className="etched-glass p-10 rounded-[3.5rem] border border-white/5">
              <SettingToggle 
-              icon={Hammer}
-              title="AFiREfly Stamper"
-              desc="Model Elevation: Allows JaneBot to directly modify Hub state and input fields via specialized presets."
-              active={true}
-              onToggle={() => {}}
+              icon={Flame}
+              title="Cynical Reality Check"
+              desc="Enables the 'Hostile Auditor' persona. JaneBot will critique architectural flaws in real-time."
+              active={isAngryMode}
+              onToggle={toggleAngryMode}
+              warning
             />
             <div className="h-px bg-white/5 my-8" />
             <SettingToggle 
@@ -80,20 +87,12 @@ const Settings: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <div className="pt-20 text-center">
-         <div className="inline-flex items-center gap-4 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[9px] font-black uppercase tracking-[0.6em] text-slate-700">
-           Equinex-Modmind Core v2.94 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Shard Verified
-         </div>
-      </div>
     </div>
   );
 };
 
-// --- Lesser Helper Components ---
-
 const SettingToggle = ({ icon: Icon, title, desc, active, onToggle, danger, warning }: any) => (
-  <div className="flex items-start justify-between gap-6 group">
+  <div className="flex items-start justify-between gap-6 group text-left">
     <div className="flex gap-6">
       <div className={`p-4 rounded-2xl transition-all ${danger ? 'bg-red-500/10 text-red-500' : warning ? 'bg-orange-500/10 text-orange-400' : 'bg-white/5 text-slate-500 group-hover:text-emerald-400'}`}>
         <Icon size={24} />

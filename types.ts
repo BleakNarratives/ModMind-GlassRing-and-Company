@@ -30,66 +30,54 @@ export interface ChatMessage {
   };
 }
 
+export interface TacticalStep {
+  id: string;
+  label: string;
+  description: string;
+  pos: { x: number; y: number };
+  type: 'Entry' | 'Pivot' | 'Objective';
+  successRate: number;
+  detectionRisk: number;
+  targetSubsystem?: string;
+}
+
+export interface TacticalCampaign {
+  id: string;
+  name: string;
+  objective: string;
+  steps: TacticalStep[];
+  complexity: number;
+}
+
 export interface SecurityAgent {
   id: string;
   name: string;
-  status: 'Operational' | 'Standby' | 'Suppressed' | 'Active';
-  type: 'Guardian' | 'Sentinel' | 'Overseer' | 'Orchestrator' | 'Scout';
+  status: 'Active' | 'Standby' | 'Operational' | 'Alert';
+  type: 'Overseer' | 'Guardian' | 'Scout' | 'Orchestrator';
   load: number;
   health: number;
   lastPing: number;
+  persona?: string;
 }
 
-export interface SecurityTrigger {
+export interface PentestOutcome {
   id: string;
-  agentId: string;
-  name: string;
-  severity: 'Critical' | 'Warning' | 'Info';
   timestamp: number;
-  description: string;
-  resolved: boolean;
+  stepLabel: string;
+  result: 'Success' | 'Intercepted' | 'Warning';
+  details: string;
+  vulnerabilityIdentified?: string;
 }
 
 export interface RiskMeshState {
   globalRisk: number;
-  activeTriggers: SecurityTrigger[];
+  activeTriggers: any[];
   agents: SecurityAgent[];
   networkHealth: number;
   detectedIntent?: string;
-}
-
-export interface WearableShard {
-  id: string;
-  type: 'Watch' | 'Vape' | 'Ring';
-  label: string;
-  battery: number;
-  metric: string;
-  value: string | number;
-  lastSync: number;
-}
-
-export interface AfireflyPreset {
-  id: string;
-  name: string;
-  pos: { x: number, y: number };
-  scale: number;
-  opacity: number;
-}
-
-export interface NatMetric {
-  id: string;
-  label: string;
-  value: number; // 0-100
-  nuance: 'Subtle' | 'Overt' | 'Anomalous';
-  weight: number;
-}
-
-export interface RemoteLink {
-  id: string;
-  name: string;
-  role: 'Family' | 'Nanny' | 'Supervisor';
-  accessLevel: number;
-  status: 'Linked' | 'Pending';
+  auditLedger: any[];
+  activeCampaigns: TacticalCampaign[];
+  pentestHistory: PentestOutcome[];
 }
 
 export type ThinkingHatColor = 'White' | 'Red' | 'Black' | 'Yellow' | 'Green' | 'Blue';
@@ -102,10 +90,26 @@ export interface ThinkingHat {
   active: boolean;
 }
 
-export type UiTone = 'Emerald' | 'Amber' | 'Crimson' | 'Ghost' | 'Cyber';
+// FIX: Added missing exported members to resolve module build errors in external components
+export interface RemoteLink {
+  id: string;
+  name: string;
+  role: string;
+  accessLevel: number;
+  status: 'Linked' | 'Pending';
+}
 
-export interface ResonanceProfile {
-  voiceWarmth: number; // 0-100
-  uiOpacity: number; // 0-100
-  tone: UiTone;
+export interface AfireflyPreset {
+  name: 'combat' | 'ghost';
+  label?: string;
+}
+
+export interface WearableShard {
+  id: string;
+  type: 'Watch' | 'Vape';
+  label: string;
+  battery: number;
+  metric: string;
+  value: number | string;
+  lastSync: number;
 }
